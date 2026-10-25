@@ -1,0 +1,24 @@
+FROM dunglas/frankenphp:latest-php8.2
+
+RUN install-php-extensions \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip
+
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN composer install --no-autoloader --no-scripts --no-dev
+
+COPY . .
+
+RUN composer dump-autoload --optimize
+
+ENV SERVER_NAME=":80"
+CMD ["frankenphp", "php-server", "--root", "public/"]
